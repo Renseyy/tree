@@ -1,6 +1,6 @@
 import { match, Times, oneOf, noneOf, or , List, after} from "../../lib/lexer.js";
 import { HEX_DIGIT, NUMBER, UNIT, MODULUS, UNIT_CHARS, IDENTIFIER, DOLAR, NON_SPECIAL_CONTENT, ET, BACK_SLASH, QUOTE, LESS_THAN, OPEN_PAREN, CLOSE_PAREN, SEMICOLON, SET, COMMA, DOT, FROM_LEFT, FROM_STATIC, MORE_THAN  } from "../fragments.js"
-export const main = new TokenList();
+export const main = new List();
 
 main.FROM_LEFT = FROM_LEFT
 // COMMENT
@@ -164,11 +164,20 @@ main.FRAGMENT_END =
 
 main.SEMICOLON = SEMICOLON
 
+main.EQUALS = match("==")
+main.NOT_EQUAL = match("!=")
+main.IDENTITY = match("===")
+main.NOT_IDNETICAL = match("!==")
 main.SET = SET
 
 main.COMMA = COMMA
 main.DOT = DOT
 
 main.CHILD_SELECTOR = MORE_THAN;
+
+main.ADD = match('+')
+main.POWER = match('**')
+main.MULTIPLY = match('*')
+main.NOT = match('!')
 
 
