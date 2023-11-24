@@ -3,6 +3,15 @@ import { HEX_DIGIT, NUMBER, UNIT, MODULUS, UNIT_CHARS, IDENTIFIER, DOLAR, NON_SP
 export const main = new List();
 
 main.FROM_LEFT = FROM_LEFT
+
+// 
+main.STATIC_MEMBER = match('::')
+main.SCOPE_PATH = BACK_SLASH
+main.LOGICAL_NOT = match('!')
+main.BITWISE_NOT = match('~')
+main.MEMBER_OF = match('.')
+main.NEW_LINE = match('\n')
+
 // COMMENT
 main.COMMENT =
     after(
@@ -96,11 +105,11 @@ main.CLASS =
         NON_SPECIAL_CONTENT
     )
 
-main.WORKSPACE = 
-    match(
-        BACK_SLASH,
-        NON_SPECIAL_CONTENT
-    )
+// main.WORKSPACE = 
+//     match(
+//         BACK_SLASH,
+//         NON_SPECIAL_CONTENT
+//     )
 
 main.FROM_STATIC = FROM_STATIC
 

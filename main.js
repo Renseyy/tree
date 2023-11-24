@@ -8,5 +8,5 @@ const code = await fs.readFile(new URL('./code.csl', import.meta.url), "utf-8")
 const tokenizer = new Tokenizer(Modes)
 const tokens = tokenizer.tokenize(code)
 
-crazyPrinter(yard(tokens))
+crazyPrinter(yard({}, tokens))
 
