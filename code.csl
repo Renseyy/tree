@@ -1,1 +1,1 @@
-var $var = 2 + 2 * 5
+const positive var $var = 2 + 2 * 5
