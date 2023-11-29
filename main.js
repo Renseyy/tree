@@ -4,11 +4,11 @@ import fs from 'fs/promises'
 import { Times, match, oneOf, or } from "./lib/lexer.js"
 import { crazyPrinter, yard } from "./lib/parser.js"
 // //const code = await Bun.file("code.csl").text()
-const code = await fs.readFile(new URL('./code.csl', import.meta.url), "utf-8")
+const code = await fs.readFile(new URL('./code.tre', import.meta.url), "utf-8")
 const tokenizer = new Tokenizer(Modes)
 const tokens = tokenizer.tokenize(code)
 
-while(tokens.length > 0){
-    crazyPrinter(yard({}, tokens))
-}
+//console.log(tokens)
+crazyPrinter(yard({}, tokens))
+
 

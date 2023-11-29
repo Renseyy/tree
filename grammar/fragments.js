@@ -138,15 +138,10 @@ export const FLOAT_NUMBER =
 export const SIGN = oneOf("+-");
 
 export const NUMBER =
-    match(
-        Times.Opt(
-            SIGN
-        ),
-        or(
-            INT_NUMBER,
-            FLOAT_NUMBER
-        )
-    )
+	or(
+	    INT_NUMBER,
+	    FLOAT_NUMBER
+	)
 
 export const UNIT_SUB =
     match(

@@ -2,9 +2,13 @@ import { match, Times, oneOf, noneOf, or , List, after} from "../../lib/lexer.js
 import { HEX_DIGIT, NUMBER, UNIT, MODULUS, UNIT_CHARS, IDENTIFIER, DOLAR, NON_SPECIAL_CONTENT, ET, BACK_SLASH, QUOTE, LESS_THAN, OPEN_PAREN, CLOSE_PAREN, SEMICOLON, SET, COMMA, DOT, FROM_LEFT, FROM_STATIC, MORE_THAN  } from "../fragments.js"
 export const main = new List();
 
-main.FROM_LEFT = FROM_LEFT
+const WS = Times.OnceOrMore(
+	oneOf(" \t")
+)
 
-// 
+main.FROM_LEFT = FROM_LEFT
+ 
+
 main.STATIC_MEMBER = match('::')
 main.SCOPE_PATH = BACK_SLASH
 main.LOGICAL_NOT = match('!')
@@ -38,10 +42,7 @@ main.SINGLE_LINE_COMMENT =
         ),
         '\n'
     )
-main.WS = 
-    Times.OnceOrMore(
-        oneOf(" \t")
-    )
+main.WS = WS
 
 main.NL = 
     Times.OnceOrMore(
