@@ -1,1 +1,6 @@
+<<<<<<< HEAD
 const positive var $var = 2 + 2 * 5
+=======
+var $var = 2 + 2 * 5
+$x = fun($var) + 2
+>>>>>>> 5f94a676ceb6e3c39cf9a21f0c6e1d8983a4fc0c
