@@ -1,1 +1,1 @@
-var $a = 123 if true
+$a = 1 < $a > 3

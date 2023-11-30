@@ -70,16 +70,6 @@ main.DIMENSION =
         UNIT
     )
 
-main.DIV = 
-    match(
-        '/'
-    )
-main.PERCENTAGE = 
-    match(
-        NUMBER,
-        MODULUS
-    )
-
 main.NUMBER = NUMBER
 
 
@@ -147,14 +137,6 @@ main.ADVANCED_STRING_START =
         }
     )
 
-main.START_TYPE_FRAGMENT = 
-    after(
-        LESS_THAN,
-        (e) => {
-            e.pushMode('typeFragment')
-        }
-    )
-
 main.PAREN_FRAGMENT_START = 
     after(
         OPEN_PAREN,
@@ -183,11 +165,39 @@ main.SET = SET
 main.COMMA = COMMA
 main.DOT = DOT
 
-main.CHILD_SELECTOR = MORE_THAN;
+//main.CHILD_SELECTOR = MORE_THAN;
+
+// OPERATORS
+
+main.POWER = match('**')
+main.ROOT = match('//')
+
+main.MULTIPLY = match('*')
+main.DIVIDE = match('/')
+main.MODULUS = match('%')
+main.INT_DIVIDE = or('/%', '%/')
+
+main.UN_INCREMENT = match('++')
+main.UN_DECREMENT = match('--')
+main.UN_AVRAGE = match('~~')
 
 main.ADD = match('+')
-main.POWER = match('**')
-main.MULTIPLY = match('*')
+main.MINUS = match('-')
+
+main.AVR = match('~')
+// Logic operators
 main.NOT = match('!')
+
+// SHIFTS
+main.LEFT_SHIFT = match('<<')
+
+main.UNSIGNED_RIGHT_SHIFT = match('>>>')
+main.RIGHT_SHIFT = match('>>')
+
+
+main.LESS_OR_EQUAL = match('<=')
+main.MORE_OR_EQUAL = match('>=')
+main.LESS = match('<')
+main.MORE = match('>')
 
 
