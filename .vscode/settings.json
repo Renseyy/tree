@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.csl": "scss",
+        "*.neon": "yaml",
+        "*.scsl": "scsl",
+        "iosfwd": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp"
+    }
+}

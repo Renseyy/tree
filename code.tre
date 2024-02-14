@@ -1,1 +1,10 @@
-$a = 1 < $a > 3
+App(){
+    &text = "Witaj, zaloguj się"
+    &mail = Input("Mail", mail)
+    &password = Input("Hasło", password)
+    Button("Zaloguj się"){
+     @click => {
+        &text <- "Witaj ${&mail}, nie mamy cię w bazie, bo takiej nie ma"
+     }   
+    }
+}
