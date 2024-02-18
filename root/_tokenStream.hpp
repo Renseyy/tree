@@ -9,17 +9,62 @@ struct Position{
     unsigned row;
     unsigned column;
 };
+/*
+    '@' is parsed as 'staticLine' operator
+*/
+enum TokenType{
+    Whitespace, // space \t \n \r!
+    Dimension, // 12px
+    Number, //12.04
+    HexColor, //#fff
+    Group, //.userspace
+    Tag, //#red
+    Operator, //< >> <>
+    BlockSpecifier, // " ' ( /*
+    Text, // Unparsed text
+    EscapedText, // Some escaped text like \a
+    Variable, //  $test
+    Reference, // &ref
+    Sieve, // %sieve
+    State, // :state
+    Slot, // ::content
+    Indentifier
+};
 
 struct Token{
-    string type;
+    TokenType type;
     string content;
     Position pos;  
 };
+
+
+typedef vector<Token> Tokens;
+
+class TokenStream{
+    Tokens tokens;
+    string input;
+
+    public: 
+        TokenStream(string _input){
+            input = _input;
+        }
+};
+
 
 class Tokenizer{
     ifstream fileHandle;
     unsigned fileSize;
     Position actualPosition;
+    Tokens tokens;
+    
+    bool isNullString(string str){
+        return str.size() == 0;
+    }
+
+    void consume(string str)
+    {
+        
+    }
     
     public: 
         Tokenizer(string path){
