@@ -10,11 +10,14 @@ using namespace std;
 typedef unsigned unbooled;
 typedef bool (*Predicate)(char);
 
+class Node;
 
 struct Token{
     string type;
     string value;
     Position start;
+
+    operator Node () const;
 };
 
 typedef vector<Token> Tokens;
@@ -272,10 +275,10 @@ class TokenStream{
             if(c == '"' || c == '\''){
                 return readString(c);
             }
-            // @ keyword
-            if(c == '@'){
-                return readAtkeyword();
-            }
+            // // @ keyword
+            // if(c == '@'){
+            //     return readAtkeyword();
+            // }
             // Variable
             if(c == '$'){
                 return readVariable();
@@ -359,7 +362,7 @@ class TokenStream{
             const Position start = input.position();
             const char c = input.peek();
             string value = isOperatorRepeatable(c)
-                ? readWhile(isCharWrapper(c)) : string(1, input.next());
+                ? readWhile(isOperatorRepeatable) : string(1, input.next());
             return createToken("operator", value, start);
         }
 
@@ -396,12 +399,12 @@ class TokenStream{
             return createToken("color_hex", value, start);
         }
 
-        Token readAtkeyword(){
-            const Position start = input.position();
-            input.next();
-            const string value = readWhile(&isIdent);
-            return createToken("atkeyword", value, start);
-        }
+        // Token readAtkeyword(){
+        //     const Position start = input.position();
+        //     input.next();
+        //     const string value = readWhile(&isIdent);
+        //     return createToken("atkeyword", value, start);
+        // }
 
         Token readVariable(){
             const Position start = input.position();
