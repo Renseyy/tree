@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        document.addEventListener('DOMContentLoaded', ()=>{
+            let count = 0
+            function checkCount(){
+                if(count >= 10){
+                    alert('Count is dangerously hight!')
+                    count = 9
+                }
+            }
+
+            window.clicked = () => {
+                count += 1
+                checkCount()
+                setLabel()
+            }
+
+            function setLabel(){
+                document.querySelector('button').textContent = `Clicked ${count} ${count === 1 ? 'time' : 'times' }`
+            }
+            setLabel()
+        })
+    </script>
+    <button onclick="clicked()">
+        <img src="img_avatar.png">
+    </button>
+</body>
+</html>

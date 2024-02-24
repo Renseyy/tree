@@ -1,6 +1,13 @@
+
+/* Typy lini
+    let $a = 12 // StaticDeclaration
+*/
+
+
 #pragma once
 #include <iostream>
 #include <vector>
+#include "debug.hpp"
 
 #include "tokenStream.hpp"
 
@@ -13,9 +20,9 @@ typedef vector<string> strings;
 
 class Parser;
 
-typedef bool (Parser::*TypePredicate)(strings); 
+typedef bool (Parser::*TypePredicate)(strings);
 
-typedef bool (Parser::*ExpressionPredicate)(void**);
+typedef bool (Parser::*ExpressionPredicate)(void*);
 
 struct Node{
     string type;
@@ -73,8 +80,8 @@ vector<T> splice(vector<T> const &v, unsigned index, unsigned deleteCount = 0, v
     
     //Add tail
 
-    for(auto iterator = v.cbegin() + index + deleteCount; iterator < v.cend(); iterator++){
-        vec.push_back(v[iterator]);
+    for(auto iterator = v.cbegin() + index + deleteCount; iterator != v.cend(); iterator++){
+        vec.push_back(*iterator);
     }
     return vec;
 }
@@ -100,6 +107,14 @@ vector<T> concat(vector<T> const& v, vector<T>& toAdd)
 }
 
 template<typename T>
+vector<T> concat(vector<T> const& v, T& toAdd)
+{
+    vector<T> vec = v;
+    vec.push_back(toAdd);
+    return vec;
+}
+
+template<typename T>
 vector<T> drop(vector<T> const &v, int n)
 {
     auto first = v.cbegin() + n;
@@ -113,26 +128,39 @@ template<typename T>
 vector<T> vectorXor(vector<T> const &v, vector<T> const &u)
 {
     vector<T> vec;
-    for(auto& i : v){
-        bool uniq = true;
+    // for(auto& i : v){
+    //     bool uniq = true;
+    //     for(auto& )
+    // }
+    return v;
+}
+
+string join(strings ss){
+    string s;
+    for(auto& _ : ss){
+        s+= _ + " ";
     }
+    return s;
 }
 
 class Parser{
     TokenStream tokens;
 
     private:
-        Node createTextNode(string type, string content, Position start){
+        Node createNode(string type, string content, Position start){
+            
             return Node{type, content, {}, start};
         }
 
-        Node createContainerNode(string type, Nodes children, Position start){
+        Node createNode(string type, Nodes children, Position start){
+            
             return Node{type, "", children, start};
         }
 
         // isType
 
         bool isType(string type, strings values = {}){
+            
             Token t = tokens.peek();
             if(values.size() == 0) return t.type != "" ? t.type == type : false;
             // reduce
@@ -148,63 +176,82 @@ class Parser{
         }
 
         bool isSpace(){
-            return isType("space");
+            
+            return isType("space") or isType("endline");
         }
 
         bool isComment(){
+            
             return isType("comment");
         }
 
+        bool isEndline(){
+            return isType("endline");
+        }
+
         bool isPunctuation(strings values){
+            
             return isType("punctuation", values);
         }
 
         bool isOperator(strings values){
+            
             return isType("operators", values);
         }
 
         bool isIdentifier(strings values){
+            
             return isType("identifier", values);
         }
 
         //isAtKeywoar ommited 
         bool isInterpolation(){
+            
             return isPunctuation({"#", "{"});
         }
 
         bool isAttribute(){
+            
             return isPunctuation({"#", "["});
         }   
 
         TokenPair skipType(string type, TypePredicate isType, strings chars){
+            
             if((this->*isType)(chars)){
                 return TokenPair{
                     tokens.peek(),
                     tokens.next()
                 };
             }else{
-                tokens.err("Expecting " + type + ": " + joinStrings(chars));
                 return TokenPair{};
             }
         }
 
+        TokenPair skipNewline(){
+            return skipType("newline", &Parser::isPunctuation, {});
+        }
+
         TokenPair skipPunctuation(strings chars){
+            
             return skipType("punctuation", &Parser::isPunctuation, chars);
         }
 
         TokenPair skipOperator(strings chars){
+            
             return skipType("operator", &Parser::isOperator, chars);
         }
 
         //skipAtKeyword
 
         void unexpected(){
+            
             Token t = tokens.peek();
             tokens.err("Unexpected token: " + t.type + " (" + t.value + ") ");
         }
 
         //parse stylesheet -> parseScript -> moved to Public
         int findIndexByTypeAndContent(Nodes& values, string type, string content = ""){
+            
             for(int i = 0; i < values.size(); i++){
                 if(values[i].type == type && (content == "" || content == values[i].content))
                     return i;
@@ -213,6 +260,7 @@ class Parser{
         }
 
         Node maybeDeclaration(char punctuation, Nodes& values){
+            
             bool expandedPseudo = false;
             // If the declaration ends with a ";" expand the first pseudo_class
             // because pseudo_class can't be part of a declaration property
@@ -220,8 +268,8 @@ class Parser{
                 int pseudoIndex = findIndexByTypeAndContent(values, "pseudo_class");
                 if(pseudoIndex > 0){
                     Node a = values[pseudoIndex];
-                    Node b = createTextNode("punctuation", ":", a.start);
-                    Nodes nodes = concat({b}, a.children);
+                    Node b = createNode("punctuation", ":", a.start);
+                    Nodes nodes = concat((Nodes) {b}, a.children);
                     values = splice(values, pseudoIndex, 1, nodes);
                     expandedPseudo = true;
                 }
@@ -235,21 +283,21 @@ class Parser{
                 if (maybeSpace.type == "space" || expandedPseudo) {
                     Position start = values[0].start;
                     Nodes properties = take(values, puncIndex);
-                    const Node propertyNode = createContainerNode(
+                    const Node propertyNode = createNode(
                         "property", properties, properties[0].start);
                     Nodes value_ = drop(values, puncIndex + 1);
                     if (punctuation == '{') {
-                        Node block = Node{}; //parseBlock();
+                        Node block = parseBlock();
                         value_.push_back(block);
                     }
-                    Node valueNode = createContainerNode(
+                    Node valueNode = createNode(
                         "value", value_, value_[0].start);
                     Nodes declarationValue = {propertyNode, values[puncIndex], valueNode};
                     if (punctuation == ';') {
                         const Node start = skipPunctuation({";"}).start;
                         declarationValue.push_back(start);
                     }
-                    return createContainerNode(
+                    return createNode(
                         "declaration", declarationValue, start);
                 }
             }
@@ -258,6 +306,7 @@ class Parser{
         }
 
         Nodes parseNode(){
+            
             if(isSpace() || isComment()){
                 Token t = tokens.next();
                 return {Node{t.type, t.value, {}, t.start}};
@@ -269,19 +318,26 @@ class Parser{
                 if(isPunctuation({"{"})){
                     if(values.size() > 0){
                         // Warning, i dont know how this will be casted
-                        return maybeDeclaration('{', values) || parseRule(values);
+                        Node dec = maybeDeclaration('{', values);
+                        if(dec) return {dec};
+                        return {parseRule(values)};
                     }else{
-                        return concat(values, parseBlock());
+                        Node parsedBlock = parseBlock();
+                        return concat(values, parsedBlock);
                     }
                 }
                 if(isPunctuation({";"})){
                     return {maybeDeclaration(';', values)};
                 }
+                if(isEndline()){
+                    return {maybeDeclaration('\0', values)};
+                }
             }
             return values;
         }
 
-        Nodes parseExpression(ExpressionPredicate predicate, void** data){
+        Nodes parseExpression(ExpressionPredicate predicate, void* data){
+            
             Nodes value;
             Nodes declaration;
             while(true){
@@ -289,76 +345,240 @@ class Parser{
                 // Declaration
                 if(isPunctuation({":"}) && declaration.size()){
                     value.push_back(parseDeclaration(declaration));
+                    // xor
+                    value = vectorXor(value, declaration);
+                    declaration = {};
+                }
+                // Atom
+                if(tokens.eof() || !(this->*predicate)(data)) break;
+                const Node atom = parseAtom();
+                value.push_back(atom);
+                if(atom.type != "space" && atom.type != "punctuation"){
+                    declaration.push_back(atom);
                 }
             }
+            return value;
         }
 
         Node parseAtom(){
+            
             // Changed to linear instad of array function
             Node result;
-            if(isPunctuation({"("})){
-                result = parseWrapped('parentheses', '(', ')')
-            }
-            // Interpolation
-            if (this.is_interpolation()) {
-                result = this.parse_interolation()
-            }
-
-            // Interpolation
-            if (this.is_attribute()) {
-                result = this.parse_attribute()
-            }
-
-            // Attr
-            if (this.is_punctuation('[')) {
-                result = this.parse_wrapped('query', '[', ']')
-            }
-            // Class
-            if (this.is_punctuation('.')) {
-                result = parseSelector('group', '.')
-            }
-            // Id
-            if (this.is_punctuation('#')) {
-                result = parseSelector('id', '#')
-            }
-            // Pseudo Element
-            if (this.is_punctuation('::')) {
-                result = parseSelector('pseudo_element', ':')
-            }
-            // Pseudo Class
-            if (this.is_punctuation(':')) {
-                const next = this.tokens.peek(1)
-                if (
-                (next.type === 'identifier') ||
-                (next.type === 'punctuation' && next.value === '#')
-                ) {
-                return this.parse_selector('pseudo_class', ':')
+            // This is lazy elmulation that this is some sort of inner function
+            do{ 
+                if(isPunctuation({"("})){
+                    result = parseWrapped("parentheses", "(", ")");
+                    break;
                 }
-            }
+                // Interpolation
+                if(isInterpolation()){
+                    result = parseInterpolation();
+                    break;
+                }
+
+                // Interpolation
+                if(isAttribute()){
+                    result = parseAttribute();
+                    break;
+                }
+
+                // Attr
+                if(isPunctuation({"["})){
+                    result = parseWrapped("query", "[", "]");
+                    break;
+                }
+                // Class
+                if(isPunctuation({"."})) {
+                    result = parseSelector("group", ".");
+                    break;
+                }
+                // Id
+                if(isPunctuation({"#"})) {
+                    result = parseSelector("id", "#");
+                    break;
+                }
+                // Pseudo Element
+                if(isPunctuation({"::"})) {
+                    result = parseSelector("pseudo_element", ":");
+                    break;
+                }
+                // Pseudo Class
+                if (isPunctuation({":"})) {
+                    Node next = tokens.peek(1);
+                    if (
+                    (next.type == "identifier") ||
+                    (next.type == "punctuation" && next.content == "#")
+                    ) {
+                        result = parseSelector("pseudo_class", ":");
+                        break;
+                    }
+                }
+                result = tokens.next();
+            }while(false);
             // Token
 
             /// Check is part of function
-            return tokens.next();
+            return wrapIntoFunction(result);
         }
 
-        // parseDeclaration
+        bool parseDeclarationArrow(void* _){
+            
+            Node* secondSeparator = (Node*) _;
+            if(isPunctuation({";"})){
+                *secondSeparator = tokens.next();
+                return false;
+            }
+            if(isPunctuation({","})){
+                *secondSeparator = tokens.next();
+                return false;
+            }
+            if(isPunctuation({")"})) return false;
+            return true;
+        }
 
-        Node parseWrapped(string type, string open, string close, Position _start){
+        Node parseDeclaration(Nodes property){
+            
+            Node firstSeparator = skipPunctuation({":"}).start;
+            Node secondSeparator;
+            Nodes value = parseExpression(&Parser::parseDeclarationArrow, &secondSeparator);
+            Node propertyNode = createNode("property", property, property[0].start);
+            Node valueNode = createNode("value", value, value[0].start);
+            Nodes declarationValue = {propertyNode, firstSeparator, valueNode};
+            if(secondSeparator) declarationValue.push_back(secondSeparator);
+            return createNode("declaration", declarationValue, property[0].start);
+        }
+        
+        bool parseWrappedArrow(void* data){
+            
+            return !isPunctuation({*(string*)data});
+        }
+
+        Node parseWrapped(string type, string open, string close, Position _start = {}){
+            
             Node start = skipPunctuation({open}).start;
-
+            Nodes value = parseExpression(&Parser::parseWrappedArrow, (void *) &close);
+            Node next = skipPunctuation({close}).next;
+            return createNode(type, value, start.start);
         }
+
+        Node parseBlock(){
+            Node start = skipPunctuation({"{"}).start;
+            Nodes value;
+            while(
+                !tokens.eof() &&
+                !isPunctuation({"}"})
+            ){
+                Nodes nodes = parseNode();
+                for(auto node : nodes){
+                    value.push_back(node);
+                }
+            }
+            Node next = skipPunctuation({"}"}).next;
+            if(isPunctuation({";"})){
+               skipPunctuation({";"}); 
+            }
+            return createNode("block", value, start.start);
+        }
+
+        bool parseArgumentsArrow(void * _){
+            
+            if(isPunctuation({","})) return false;
+            if(isPunctuation({")"})) return false;
+            return true;
+        }
+        Node parseArguments(string type){
+            
+            Node start = skipPunctuation({"("}).start;
+            Nodes value;
+            if(type == "pseudo_class"){
+                while(!tokens.eof() && !isPunctuation({")"})){
+                    Nodes toAdd = parseExpression(&Parser::parseArgumentsArrow, NULL);
+                    value = concat(value, toAdd);
+                }
+                if(isPunctuation({","})){
+                    value.push_back(tokens.next());
+                }
+            }
+            Node next = skipPunctuation({")"}).next;
+            return createNode("arguments", value, start.start);
+        }
+
+        Node wrapIntoFunction(Node& node){
+            
+            if(isPunctuation({"("}) && 
+                (node.type == "identifier") ||
+                (node.type == "function") ||
+                (node.type == "interpolation") ||
+                (node.type == "pseudo_class") ||
+                (node.type == "attribute")
+            ){
+                return parseFunction(node);
+            }
+            return node;
+        }
+
+        Node parseFunction(Node node){
+            
+            Node args = parseArguments(node.type);
+            // Bez (Nodes) nie wiedział jaki to typ xD
+            return createNode("function", (Nodes) {node, args}, node.start);
+        }
+
+        Node parseInterpolation(){
+            
+            Node start = skipPunctuation({"#"}).start;
+            return parseWrapped("interpolation", "{", "}", start.start);
+        }
+
+        Node parseAttribute(){
+            
+            Node start = skipPunctuation({"#"}).start;
+            return parseWrapped("interpolation", "[", "]", start.start);
+        }
+
+        //Parse AtRule ommited
+
+        Node parseRule(Nodes selectors){
+            
+            Node selector = createNode("selector", selectors, selectors[0].start);
+            Node block = parseBlock();
+            return createNode("rule", (Nodes) {selector, block}, selector.start);
+        }
+
+        Node parseSelector(string type, string punctuation){
+            
+            Node start = skipPunctuation({punctuation}).start;
+            if(isPunctuation({":"})){
+                skipPunctuation({":"});
+            }
+            Nodes value;
+            Node next = isInterpolation() ? parseInterpolation() : tokens.next();
+            while(next.type == "identifier" || next.type == "interpolation" || next.type == "operator"){
+                value.push_back(next);
+                next = isInterpolation() ? parseInterpolation() : tokens.peek();
+                if(!next) break;
+                if(next.type == "identifier") tokens.next();
+                if(next.type == "operator") tokens.next();
+            }
+            if(!value.size()){
+                tokens.err("Selector (" + type + ") expected 'identifier' or 'interpolation'");
+            }
+            return createNode(type, value, start.start);
+        }
+
 
     public:
         Parser(TokenStream tokens): tokens(tokens) {};
 
         Node parseScript(){
+            
             Nodes nodes;
             while(!tokens.eof()){
                 for(auto& node : parseNode()){
                     nodes.push_back(node);
                 }
             }
-            return createContainerNode("script", nodes, Position{});
+            return createNode("script", nodes, Position{});
         }
 
 

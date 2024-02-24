@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "inputStream.hpp"
+#include "debug.hpp"
 using namespace std;
 
 #define UTF8_MASK -128
@@ -21,8 +22,6 @@ struct Token{
 };
 
 typedef vector<Token> Tokens;
-const string HEX_PATTERN = "/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/";
-
 
 Predicate nottedPredicate = NULL;
 
@@ -50,12 +49,15 @@ bool isWhitespace(char c){
     switch(c){
         case '\t':
         case '\r':
-        case '\n':
         case ' ':
             return true;
         default:
             return false;
     }
+}
+
+bool isEndLine(char c){
+    return c == '\n';
 }
 
 bool isNewline(char c){
@@ -168,11 +170,11 @@ unbooled isHex(InputStream &input){
     char hex = input.peek();
     unsigned len = 0;
     if(hex == '#'){
-        while(++len < 9){
-            if(!isHexDigit(input.peek(len))){
+        do{
+            if(!isHexDigit(input.peek(len + 1))){
                 break;
             }
-        }
+        }while(++len < 9);
         switch(len){
             case 3:
             case 4:
@@ -204,6 +206,7 @@ class TokenStream{
          * To do
         */
         Token peek(unsigned offset = 0){
+            
             if(tokens.size() == 0){
                const Token token = readNext();
                if(token.type != "") tokens.push_back(token);
@@ -219,19 +222,21 @@ class TokenStream{
         }
 
         Token next(){
+            
             if(tokens.size() == 0)
                 return readNext();
             Token token = tokens[0];
             tokens.erase(tokens.begin());
-            
             return token;
         }
 
         void returnToken(Token token){
+            
             tokens.insert(tokens.begin(), token);
         }
 
         bool eof(){
+            
             return peek().type == "";
         }
 
@@ -242,6 +247,10 @@ class TokenStream{
         Token readNext(){
             if(input.eof()) return Token{""};
             const char c = input.peek();
+            // Whitespace
+            if(isEndLine(c)){
+                return readEndLine();
+            }
             // Whitespace
             if(isWhitespace(c)){
                 return readWhitespace();
@@ -257,6 +266,7 @@ class TokenStream{
             // Hex
             unbooled hexLength = isHex(input);
             if(hexLength){
+                cout<<hexLength<<endl;
                 return readHex(hexLength);
             }
             // Punctutation
@@ -319,6 +329,11 @@ class TokenStream{
             Position start = input.position();
             string value = readWhile(&isWhitespace);
             return createToken("space", value, start);
+        }
+        Token readEndLine(){
+            Position start = input.position();
+            string value = readWhile(&isEndLine);
+            return createToken("endline", value, start);
         }
 
         Token readComment(){

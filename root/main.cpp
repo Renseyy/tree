@@ -14,30 +14,50 @@ exit ${RV}
 #include "parse.hpp"
 using namespace std;
 
-int main(int argc, char** argv){
-    // if(argc < 2){
-    //     cerr<<"Usage: "<< argv[0] << " file.tree"<<endl; 
-    //     exit(-1);
-    // }
-    // ifstream fileHandle(argv[1]);
-    // if(!fileHandle.good()){
-    //     cerr << ("Błąd otwarcia pliku: " + string(argv[1]))<<endl;
-    //     exit(-1);
-    // }
-    // ostringstream oss;
-    // oss << fileHandle.rdbuf();
-    // InputStream is(oss.str());
-    // TokenStream ts(is);
-    // Token t = ts.next();
-    // // Null token has no type
-    // while(t.type != ""){
-    //     cout << t.type << " " << t.value << endl;
-    //     t = ts.next();
-    // }   
 
-    strings a = {"a", "b", "c", "d"};
-    strings b = slice(a, 2, 4);
-    for(auto& c : b){
-        cout << c <<endl;
+void replaceAll(string& str, const string& from, const string& to) {
+    if(from.empty())
+        return;
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
     }
+}
+
+void printNode(Node& node, unsigned level){
+    cout << string(level, ' ')  << node.type;
+    if(node.content != ""){
+        string content = node.content;
+        replaceAll(content, "\n", "⏎");
+        replaceAll(content, " ", "·");
+        cout << ": " << "\"" << content << "\""<<endl;
+    }else{
+        cout << ": [" << node.children.size() << "]"<<endl;
+        for(auto& child : node.children){
+            printNode(child, level + 1);
+        }
+    }
+}
+
+
+
+int main(int argc, char** argv){
+    // Xor is not fully implemented
+    if(argc < 2){
+        cerr<<"Usage: "<< argv[0] << " file.tree"<<endl; 
+        exit(-1);
+    }
+    ifstream fileHandle(argv[1]);
+    if(!fileHandle.good()){
+        cerr << ("Błąd otwarcia pliku: " + string(argv[1]))<<endl;
+        exit(-1);
+    }
+    ostringstream oss;
+    oss << fileHandle.rdbuf();
+    InputStream is(oss.str());
+    TokenStream ts(is);
+    Parser parser(ts);
+    Node script = parser.parseScript();
+    printNode(script, 0);
 }

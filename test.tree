@@ -1,15 +1,21 @@
-nav {
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  li { display: inline-block; }
-
-  a {
-    display: ;
-    padding: 6px 12px;
-    text-decoration: none;
-  }
+.danger{
+    color: red    
 }
+
+site{
+    let $count = 0                                                       //I
+
+    [&count >= 10]{                                                     //D
+        @alert('count is dangerously hight!')                           //I
+        $count = 9                                                       //I
+    }
+
+    Button.danger(){
+        label: "Clicked &count ${ $count === 1 ? 'time' : 'times'}"      //D
+
+        :click => $count += 1
+
+        Image.danger(img_avatar.png)
+    }
+}
+
