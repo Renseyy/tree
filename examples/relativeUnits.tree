@@ -1,0 +1,18 @@
+/* In Tree we have aboslute units and relative units
+    aboslute unit is always calculated into other aboslute units with same factor
+    relative unit depends on object where was placed
+
+    all `baseType`'s have base unit, an aboslute unit used in math equations
+
+    example of absolute units are `px` (pixels)
+
+    base relative unit is `rx` (relative pixel) whitch depends on dpi
+
+    if some unit based on relative unit, but with absolute factor, we name it semiabsolute
+
+    semiabsolute units are pex: `in` (inches) 1in = 96rx = 2.54cm
+    
+
+    *baseType is a type that have no prototype 
+*/
+

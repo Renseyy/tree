@@ -1,10 +1,44 @@
-body{
-  let $color = 0
-  backgroundColor: { tets + 123 }, 'rers'
-  
-  :click => $count += 1
+let $a = 0
+let $b = 2
+let $c = $a + $b
+let $d: &a + &b
+/*
+    watchChanges([$a, $b], ()=>{
+        $d = $a + $b
+    })
+*/
+@log($c $d) // 2 2
+$a = 8
+@log($c $d) // 2 10
 
-  Button(){
-    label: red
-  }
+// Imperative way
+@if $a == $b {
+    @log($a $b)
 }
+
+/* Difference between &a, &b | $a, $b | $a, &b | &a, $b */
+
+[&a == &b]{     //Auto reload on change `a, b`
+    @log($a $b)
+}
+
+/*
+watchChanges([$a, $b], ()=>{
+    if($a == $b){
+        log($a, $b)
+    }
+})
+*/
+
+[$a == &b]{     //Auto reload on change `b`
+    @log($a $b)
+}
+
+[&a == $b]{     //Auto reload on change `a`
+    @log($a $b)
+}
+
+[$a == $b]{     //Shows error: watcher at line 36 has no listeners, use @if instead
+    @log($a $b)
+} 
+
