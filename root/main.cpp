@@ -12,6 +12,7 @@ exit ${RV}
 #include "inputStream.hpp"
 #include "tokenStream.hpp"
 #include "parse.hpp"
+#include "generator.hpp"
 using namespace std;
 
 
@@ -40,8 +41,6 @@ void printNode(Node& node, unsigned level){
     }
 }
 
-
-
 int main(int argc, char** argv){
     // Xor is not fully implemented
     if(argc < 2){
@@ -60,4 +59,5 @@ int main(int argc, char** argv){
     Parser parser(ts);
     Node script = parser.parseScript();
     printNode(script, 0);
+    generateIntoPath("./test.js", script);
 }
